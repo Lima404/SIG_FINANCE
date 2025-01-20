@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Info</title>
+    <link rel="stylesheet" href="../static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Stock Information Lookup</h1>
+        <form id="stock-form">
+            <label for="ticker">Enter Stock Ticker:</label>
+            <input type="text" id="ticker" name="ticker" placeholder="e.g., AAPL, TSLA, MSFT" required>
+            <button type="submit">Search</button>
+        </form>
+        <div id="result">
+            <!-- Os dados da ação serão exibidos aqui -->
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("stock-form").addEventListener("submit", async function (e) {
+            e.preventDefault(); // Previne o comportamento padrão do formulário
+
+            const ticker = document.getElementById("ticker").value; // Obtém o valor do ticker
+            const resultDiv = document.getElementById("result"); // Elemento onde os dados serão exibidos
+            resultDiv.innerHTML = "Loading..."; // Mensagem de carregamento
+
+            try {
+                // Requisição à API
+                const response = await fetch("http://127.0.0.1:5001/search", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ ticker }) // Envia o ticker no corpo da requisição
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Construir HTML com os dados retornados
+                    resultDiv.innerHTML = `
+                        <h2>Stock Information</h2>
+                        <p><strong>Symbol:</strong> ${data.symbol}</p>
+                        <p><strong>Market Price:</strong> ${data.regularMarketPrice}</p>
+                        <p><strong>Bid:</strong> ${data.bid}</p>
+                        <p><strong>Ask:</strong> ${data.ask}</p>
+                        <p><strong>Previous Close:</strong> ${data.previousClose}</p>
+                        <p><strong>Open:</strong> ${data.open}</p>
+                        <p><strong>Day Low:</strong> ${data.dayLow}</p>
+                        <p><strong>Day High:</strong> ${data.dayHigh}</p>
+                        <p><strong>Volume:</strong> ${data.volume}</p>
+                        <p><strong>Market Cap:</strong> ${data.marketCap}</p>
+                        <p><strong>Forward PE:</strong> ${data.forwardPE}</p>
+                        <p><strong>Trailing PE:</strong> ${data.trailingPE}</p>
+                        <p><strong>Dividend Rate:</strong> ${data.dividendRate}</p>
+                        <p><strong>Dividend Yield:</strong> ${data.dividendYield}</p>
+                        <p><strong>Sector:</strong> ${data.sector}</p>
+                        <p><strong>Currency:</strong> ${data.currency}</p>
+                    `;
+                } else {
+                    const error = await response.json();
+                    resultDiv.innerHTML = `<p style="color: red;">Error: ${error.error}</p>`;
+                }
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                resultDiv.innerHTML = `<p style="color: red;">An error occurred while fetching data.</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
